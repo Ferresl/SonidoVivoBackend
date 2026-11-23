@@ -1,0 +1,50 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: producto-db
+              uri: lb://producto-db
+              predicates:
+                - Path=/api/productos,/api/productos/**
+            - id: inventario-db
+              uri: lb://inventario-db
+              predicates:
+                - Path=/api/inventarios,/api/inventarios/**
+            - id: cliente-db
+              uri: lb://cliente-db
+              predicates:
+                - Path=/api/clientes,/api/clientes/**
+            - id: usuario-db
+              uri: lb://usuario-db
+              predicates:
+                - Path=/api/usuarios,/api/usuarios/**
+            - id: carrito-db
+              uri: lb://carrito-db
+              predicates:
+                - Path=/api/carritos,/api/carritos/**
+            - id: pedido-db
+              uri: lb://pedido-db
+              predicates:
+                - Path=/api/pedidos,/api/pedidos/**
+            - id: pago-db
+              uri: lb://pago-db
+              predicates:
+                - Path=/api/pagos,/api/pagos/**
+            - id: factura-db
+              uri: lb://factura-db
+              predicates:
+                - Path=/api/facturas,/api/facturas/**
+            - id: notificacion-db
+              uri: lb://notificacion-db
+              predicates:
+                - Path=/api/notificaciones,/api/notificaciones/**
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
