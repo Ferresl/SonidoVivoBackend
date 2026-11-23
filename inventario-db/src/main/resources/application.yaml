@@ -1,0 +1,26 @@
+server:
+  port: ${SERVER_PORT:8082}
+spring:
+  application:
+    name: inventario-db
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/inventario_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
