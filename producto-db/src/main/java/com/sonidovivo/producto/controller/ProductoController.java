@@ -21,7 +21,9 @@ public class ProductoController {
         return ResponseEntity.ok(service.listar());
     }
 
-    @GetMapping("/{id}") public ResponseEntity<ProductoResponseDto> buscar(@PathVariable Long id) { return ResponseEntity.ok(service.buscar(id)); }
+    @GetMapping("/{id}") 
+    public ResponseEntity<ProductoResponseDto> buscar(@PathVariable Long id) { 
+        return ResponseEntity.ok(service.buscar(id)); }
 
     @PostMapping
     @Operation(summary = "Crear producto")
@@ -37,9 +39,12 @@ public class ProductoController {
 
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean activo) {
-        service.cambiarEstado(id, activo); return ResponseEntity.noContent().build();
+        service.cambiarEstado(id, activo); 
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) { service.eliminar(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) { 
+        service.eliminar(id); 
+        return ResponseEntity.noContent().build(); }
 }
