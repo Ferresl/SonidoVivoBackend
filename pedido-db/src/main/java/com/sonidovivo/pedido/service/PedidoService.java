@@ -8,51 +8,54 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-
 @Service @RequiredArgsConstructor
 public class PedidoService {
-    private final PedidoRepository repository;
-
+    private final PedidoRepository repositorio;
     @Transactional(readOnly = true)
-    public java.util.List<PedidoResponseDto> listar() { return repository.findAll().stream().map(this::toResponse).toList(); }
-
+    public java.util.List<PedidoResponseDto> listar() {
+        return repositorio.findAll().stream().map(this::convertirRespuesta).toList();
+    }
     @Transactional(readOnly = true)
-    public PedidoResponseDto buscar(Long id) { return toResponse(encontrar(id)); }
-
-    @Transactional
-    public PedidoResponseDto crear(PedidoRequestDto dto) {
-        Pedido entity = new Pedido();
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public PedidoResponseDto buscar(Long id) {
+        return convertirRespuesta(encontrar(id));
     }
-
     @Transactional
-    public PedidoResponseDto actualizar(Long id, PedidoRequestDto dto) {
-        Pedido entity = encontrar(id);
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public PedidoResponseDto crear(PedidoRequestDto datos) {
+        Pedido entidad = new Pedido();
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
     }
-
     @Transactional
-    public void cambiarEstado(Long id, boolean activo) { encontrar(id).setActivo(activo); }
-
+    public PedidoResponseDto actualizar(Long id, PedidoRequestDto datos) {
+        Pedido entidad = encontrar(id);
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
+    }
     @Transactional
-    public void eliminar(Long id) { encontrar(id).setActivo(false); }
-
-    private Pedido encontrar(Long id) { return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado")); }
-
-    private void copiar(PedidoRequestDto dto, Pedido entity) {
-        entity.setClienteId(dto.clienteId());
-        entity.setEstado(dto.estado());
-        entity.setImpuesto(dto.impuesto());
-
-        entity.getDetalles().clear();
-        for (PedidoRequestDto.DetalleDto item : dto.detalles()) {
-            Detalle d = new Detalle(); d.setProductoId(item.productoId()); d.setCantidad(item.cantidad()); d.setPrecioUnitario(item.precioUnitario()); entity.getDetalles().add(d);
+    public void cambiarEstado(Long id, boolean activo) {
+        encontrar(id).setActivo(activo);
+    }
+    @Transactional
+    public void eliminar(Long id) {
+        encontrar(id).setActivo(false);
+    }
+    private Pedido encontrar(Long id) {
+        return repositorio.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+    }
+    private void copiar(PedidoRequestDto datos, Pedido entidad) {
+        entidad.setClienteId(datos.clienteId());
+        entidad.setEstado(datos.estado());
+        entidad.setImpuesto(datos.impuesto());
+        entidad.getDetalles().clear();
+        for (PedidoRequestDto.DetalleDto productoSolicitado : datos.detalles()) {
+            Detalle detalle = new Detalle();
+            detalle.setProductoId(productoSolicitado.productoId());
+            detalle.setCantidad(productoSolicitado.cantidad());
+            detalle.setPrecioUnitario(productoSolicitado.precioUnitario());
+            entidad.getDetalles().add(detalle);
         }
     }
-
-    private PedidoResponseDto toResponse(Pedido e) {
-        return new PedidoResponseDto(e.getId(), e.getClienteId(), e.getEstado(), e.getImpuesto(), e.isActivo(), e.getCreatedAt(), e.getUpdatedAt(), e.getDetalles().stream().map(d -> new PedidoRequestDto.DetalleDto(d.getProductoId(), d.getCantidad(), d.getPrecioUnitario())).toList(), e.getSubtotal(), e.getTotal());
+    private PedidoResponseDto convertirRespuesta(Pedido registro) {
+        return new PedidoResponseDto(registro.getId(), registro.getClienteId(), registro.getEstado(), registro.getImpuesto(), registro.isActivo(), registro.getCreatedAt(), registro.getUpdatedAt(), registro.getDetalles().stream().map(detalle -> new PedidoRequestDto.DetalleDto(detalle.getProductoId(), detalle.getCantidad(), detalle.getPrecioUnitario())).toList(), registro.calcularSubtotal(), registro.calcularTotal());
     }
 }

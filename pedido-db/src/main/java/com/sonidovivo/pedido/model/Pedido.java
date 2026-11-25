@@ -22,8 +22,17 @@ public class Pedido {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "detalle_pedido", joinColumns = @JoinColumn(name = "pedido_id"))
     private List<Detalle> detalles = new ArrayList<>();
-    public BigDecimal getSubtotal() { return detalles.stream().map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad()))).reduce(BigDecimal.ZERO, BigDecimal::add); }
-    public BigDecimal getTotal() { return getSubtotal() .add(impuesto); }
-    @PrePersist void crearFecha() { createdAt = Instant.now(); updatedAt = createdAt; }
-    @PreUpdate void actualizarFecha() { updatedAt = Instant.now(); }
+    public BigDecimal calcularSubtotal() {
+        return detalles.stream().map(detalle -> detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad()))).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    public BigDecimal calcularTotal() {
+        return calcularSubtotal().add(impuesto);
+    }
+    @PrePersist void crearFecha() {
+        createdAt = Instant.now();
+        updatedAt = createdAt;
+    }
+    @PreUpdate void actualizarFecha() {
+        updatedAt = Instant.now();
+    }
 }
