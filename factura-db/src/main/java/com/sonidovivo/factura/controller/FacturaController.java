@@ -9,37 +9,36 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 @RestController @RequestMapping("/api/facturas") @RequiredArgsConstructor
 @Tag(name = "Factura", description = "Operaciones de facturas")
 public class FacturaController {
-    private final FacturaService service;
-
+    private final FacturaService servicio;
     @GetMapping
-    @Operation(summary = "Listar registros activos con paginacion")
+    @Operation(summary = "Listar registros")
     public ResponseEntity<java.util.List<FacturaResponseDto>> listar() {
-        return ResponseEntity.ok(service.listar());
+        return ResponseEntity.ok(servicio.listar());
     }
-
-    @GetMapping("/{id}") public ResponseEntity<FacturaResponseDto> buscar(@PathVariable Long id) { return ResponseEntity.ok(service.buscar(id)); }
-
+    @GetMapping("/{id}") public ResponseEntity<FacturaResponseDto> buscar(@PathVariable Long id) {
+        return ResponseEntity.ok(servicio.buscar(id));
+    }
     @PostMapping
     @Operation(summary = "Crear factura")
-    public ResponseEntity<FacturaResponseDto> crear(@Valid @RequestBody FacturaRequestDto dto) {
-        FacturaResponseDto creado = service.crear(dto);
+    public ResponseEntity<FacturaResponseDto> crear(@Valid @RequestBody FacturaRequestDto datos) {
+        FacturaResponseDto creado = servicio.crear(datos);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
-
     @PutMapping("/{id}")
-    public ResponseEntity<FacturaResponseDto> actualizar(@PathVariable Long id, @Valid @RequestBody FacturaRequestDto dto) {
-        return ResponseEntity.ok(service.actualizar(id, dto));
+    public ResponseEntity<FacturaResponseDto> actualizar(@PathVariable Long id, @Valid @RequestBody FacturaRequestDto datos) {
+        return ResponseEntity.ok(servicio.actualizar(id, datos));
     }
-
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Void> cambiarEstado(@PathVariable Long id, @RequestParam Boolean activo) {
-        service.cambiarEstado(id, activo); return ResponseEntity.noContent().build();
+        servicio.cambiarEstado(id, activo);
+        return ResponseEntity.noContent().build();
     }
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) { service.eliminar(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        servicio.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
