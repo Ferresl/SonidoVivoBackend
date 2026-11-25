@@ -1,6 +1,14 @@
 server:
   port: ${SERVER_PORT:8087}
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jws-algorithms: HS256
+app:
+  jwt:
+    secret: ${JWT_SECRET}
   application:
     name: pago-db
   datasource:

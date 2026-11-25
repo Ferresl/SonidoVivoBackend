@@ -9,30 +9,27 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Optional;
-
 @ExtendWith(MockitoExtension.class)
 class PagoServiceTest {
-    @Mock PagoRepository repository;
-    @InjectMocks PagoService service;
-
+    @Mock PagoRepository repositorio;
+    @InjectMocks PagoService servicio;
     @Test void buscarInexistenteDevuelve404() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.buscar(99L));
-        assertEquals(404, e.getStatusCode().value());
+        when(repositorio.findById(99L)).thenReturn(Optional.empty());
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> servicio.buscar(99L));
+        assertEquals(404, error.getStatusCode().value());
     }
-
     @Test void eliminarDesactivaSinBorrarHistorial() {
-        Pago entity = new Pago();
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.eliminar(1L);
-        assertFalse(entity.isActivo());
-        verify(repository, never()).delete(any());
+        Pago entidad = new Pago();
+        when(repositorio.findById(1L)).thenReturn(Optional.of(entidad));
+        servicio.eliminar(1L);
+        assertFalse(entidad.isActivo());
+        verify(repositorio, never()).delete(any());
     }
-
     @Test void cambiarEstadoPermiteReactivar() {
-        Pago entity = new Pago(); entity.setActivo(false);
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.cambiarEstado(1L, true);
-        assertTrue(entity.isActivo());
+        Pago entidad = new Pago();
+        entidad.setActivo(false);
+        when(repositorio.findById(1L)).thenReturn(Optional.of(entidad));
+        servicio.cambiarEstado(1L, true);
+        assertTrue(entidad.isActivo());
     }
 }
