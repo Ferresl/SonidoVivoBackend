@@ -8,6 +8,10 @@ spring:
       server:
         webflux:
           routes:
+            - id: auth
+              uri: lb://usuario-db
+              predicates:
+                - Path=/api/auth/**
             - id: producto-db
               uri: lb://producto-db
               predicates:
