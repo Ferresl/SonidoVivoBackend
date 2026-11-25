@@ -8,49 +8,47 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-
 @Service @RequiredArgsConstructor
 public class ClienteService {
-    private final ClienteRepository repository;
-
+    private final ClienteRepository repositorio;
     @Transactional(readOnly = true)
-    public java.util.List<ClienteResponseDto> listar() { return repository.findAll().stream().map(this::toResponse).toList(); }
-
+    public java.util.List<ClienteResponseDto> listar() {
+        return repositorio.findAll().stream().map(this::convertirRespuesta).toList();
+    }
     @Transactional(readOnly = true)
-    public ClienteResponseDto buscar(Long id) { return toResponse(encontrar(id)); }
-
-    @Transactional
-    public ClienteResponseDto crear(ClienteRequestDto dto) {
-        Cliente entity = new Cliente();
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public ClienteResponseDto buscar(Long id) {
+        return convertirRespuesta(encontrar(id));
     }
-
     @Transactional
-    public ClienteResponseDto actualizar(Long id, ClienteRequestDto dto) {
-        Cliente entity = encontrar(id);
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public ClienteResponseDto crear(ClienteRequestDto datos) {
+        Cliente entidad = new Cliente();
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
     }
-
     @Transactional
-    public void cambiarEstado(Long id, boolean activo) { encontrar(id).setActivo(activo); }
-
-    @Transactional
-    public void eliminar(Long id) { encontrar(id).setActivo(false); }
-
-    private Cliente encontrar(Long id) { return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado")); }
-
-    private void copiar(ClienteRequestDto dto, Cliente entity) {
-        entity.setNombre(dto.nombre());
-        entity.setCorreo(dto.correo());
-        entity.setTelefono(dto.telefono());
-        entity.setDireccion(dto.direccion());
-
-
+    public ClienteResponseDto actualizar(Long id, ClienteRequestDto datos) {
+        Cliente entidad = encontrar(id);
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
     }
-
-    private ClienteResponseDto toResponse(Cliente e) {
-        return new ClienteResponseDto(e.getId(), e.getNombre(), e.getCorreo(), e.getTelefono(), e.getDireccion(), e.isActivo(), e.getCreatedAt(), e.getUpdatedAt());
+    @Transactional
+    public void cambiarEstado(Long id, boolean activo) {
+        encontrar(id).setActivo(activo);
+    }
+    @Transactional
+    public void eliminar(Long id) {
+        encontrar(id).setActivo(false);
+    }
+    private Cliente encontrar(Long id) {
+        return repositorio.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
+    }
+    private void copiar(ClienteRequestDto datos, Cliente entidad) {
+        entidad.setNombre(datos.nombre());
+        entidad.setCorreo(datos.correo());
+        entidad.setTelefono(datos.telefono());
+        entidad.setDireccion(datos.direccion());
+    }
+    private ClienteResponseDto convertirRespuesta(Cliente registro) {
+        return new ClienteResponseDto(registro.getId(), registro.getNombre(), registro.getCorreo(), registro.getTelefono(), registro.getDireccion(), registro.isActivo(), registro.getCreatedAt(), registro.getUpdatedAt());
     }
 }
