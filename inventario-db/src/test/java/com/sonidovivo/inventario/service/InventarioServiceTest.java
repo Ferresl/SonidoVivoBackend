@@ -9,30 +9,27 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Optional;
-
 @ExtendWith(MockitoExtension.class)
 class InventarioServiceTest {
-    @Mock InventarioRepository repository;
-    @InjectMocks InventarioService service;
-
+    @Mock InventarioRepository repositorio;
+    @InjectMocks InventarioService servicio;
     @Test void buscarInexistenteDevuelve404() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.buscar(99L));
-        assertEquals(404, e.getStatusCode().value());
+        when(repositorio.findById(99L)).thenReturn(Optional.empty());
+        ResponseStatusException error = assertThrows(ResponseStatusException.class, () -> servicio.buscar(99L));
+        assertEquals(404, error.getStatusCode().value());
     }
-
     @Test void eliminarDesactivaSinBorrarHistorial() {
-        Inventario entity = new Inventario();
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.eliminar(1L);
-        assertFalse(entity.isActivo());
-        verify(repository, never()).delete(any());
+        Inventario entidad = new Inventario();
+        when(repositorio.findById(1L)).thenReturn(Optional.of(entidad));
+        servicio.eliminar(1L);
+        assertFalse(entidad.isActivo());
+        verify(repositorio, never()).delete(any());
     }
-
     @Test void cambiarEstadoPermiteReactivar() {
-        Inventario entity = new Inventario(); entity.setActivo(false);
-        when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        service.cambiarEstado(1L, true);
-        assertTrue(entity.isActivo());
+        Inventario entidad = new Inventario();
+        entidad.setActivo(false);
+        when(repositorio.findById(1L)).thenReturn(Optional.of(entidad));
+        servicio.cambiarEstado(1L, true);
+        assertTrue(entidad.isActivo());
     }
 }

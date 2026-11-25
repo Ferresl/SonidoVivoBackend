@@ -21,7 +21,11 @@ public class Inventario {
     private boolean activo = true;
     private Instant createdAt;
     private Instant updatedAt;
-
-    @PrePersist void crearFecha() { createdAt = Instant.now(); updatedAt = createdAt; }
-    @PreUpdate void actualizarFecha() { updatedAt = Instant.now(); }
+    @PrePersist void crearFecha() {
+        createdAt = Instant.now();
+        updatedAt = createdAt;
+    }
+    @PreUpdate void actualizarFecha() {
+        updatedAt = Instant.now();
+    }
 }
