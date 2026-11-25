@@ -1,0 +1,212 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./infra/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  eureka-server:
+    build:
+      context: .
+      args:
+        SERVICE: eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+
+  producto-db:
+    build:
+      context: .
+      args:
+        SERVICE: producto-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/producto_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  inventario-db:
+    build:
+      context: .
+      args:
+        SERVICE: inventario-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/inventario_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  cliente-db:
+    build:
+      context: .
+      args:
+        SERVICE: cliente-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/cliente_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  usuario-db:
+    build:
+      context: .
+      args:
+        SERVICE: usuario-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/usuario_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  carrito-db:
+    build:
+      context: .
+      args:
+        SERVICE: carrito-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/carrito_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  pedido-db:
+    build:
+      context: .
+      args:
+        SERVICE: pedido-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/pedido_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  pago-db:
+    build:
+      context: .
+      args:
+        SERVICE: pago-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/pago_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  factura-db:
+    build:
+      context: .
+      args:
+        SERVICE: factura-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/factura_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  notificacion-db:
+    build:
+      context: .
+      args:
+        SERVICE: notificacion-db
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/notificacion_db?allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  gateway:
+    build:
+      context: .
+      args:
+        SERVICE: gateway
+    restart: unless-stopped
+    environment:
+      EUREKA_URL: http://eureka-server:8761/eureka/
+    ports:
+      - "8080:8080"
+    depends_on:
+      - producto-db
+      - inventario-db
+      - cliente-db
+      - usuario-db
+      - carrito-db
+      - pedido-db
+      - pago-db
+      - factura-db
+      - notificacion-db
+
+volumes:
+  mysql-data:
+
