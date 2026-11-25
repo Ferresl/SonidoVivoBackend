@@ -8,50 +8,53 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-
 @Service @RequiredArgsConstructor
 public class CarritoService {
-    private final CarritoRepository repository;
-
+    private final CarritoRepository repositorio;
     @Transactional(readOnly = true)
-    public java.util.List<CarritoResponseDto> listar() { return repository.findAll().stream().map(this::toResponse).toList(); }
-
+    public java.util.List<CarritoResponseDto> listar() {
+        return repositorio.findAll().stream().map(this::convertirRespuesta).toList();
+    }
     @Transactional(readOnly = true)
-    public CarritoResponseDto buscar(Long id) { return toResponse(encontrar(id)); }
-
-    @Transactional
-    public CarritoResponseDto crear(CarritoRequestDto dto) {
-        Carrito entity = new Carrito();
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public CarritoResponseDto buscar(Long id) {
+        return convertirRespuesta(encontrar(id));
     }
-
     @Transactional
-    public CarritoResponseDto actualizar(Long id, CarritoRequestDto dto) {
-        Carrito entity = encontrar(id);
-        copiar(dto, entity);
-        return toResponse(repository.saveAndFlush(entity));
+    public CarritoResponseDto crear(CarritoRequestDto datos) {
+        Carrito entidad = new Carrito();
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
     }
-
     @Transactional
-    public void cambiarEstado(Long id, boolean activo) { encontrar(id).setActivo(activo); }
-
+    public CarritoResponseDto actualizar(Long id, CarritoRequestDto datos) {
+        Carrito entidad = encontrar(id);
+        copiar(datos, entidad);
+        return convertirRespuesta(repositorio.saveAndFlush(entidad));
+    }
     @Transactional
-    public void eliminar(Long id) { encontrar(id).setActivo(false); }
-
-    private Carrito encontrar(Long id) { return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Carrito no encontrado")); }
-
-    private void copiar(CarritoRequestDto dto, Carrito entity) {
-        entity.setClienteId(dto.clienteId());
-        entity.setEstado(dto.estado());
-
-        entity.getDetalles().clear();
-        for (CarritoRequestDto.DetalleDto item : dto.detalles()) {
-            Detalle d = new Detalle(); d.setProductoId(item.productoId()); d.setCantidad(item.cantidad()); d.setPrecioUnitario(item.precioUnitario()); entity.getDetalles().add(d);
+    public void cambiarEstado(Long id, boolean activo) {
+        encontrar(id).setActivo(activo);
+    }
+    @Transactional
+    public void eliminar(Long id) {
+        encontrar(id).setActivo(false);
+    }
+    private Carrito encontrar(Long id) {
+        return repositorio.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Carrito no encontrado"));
+    }
+    private void copiar(CarritoRequestDto datos, Carrito entidad) {
+        entidad.setClienteId(datos.clienteId());
+        entidad.setEstado(datos.estado());
+        entidad.getDetalles().clear();
+        for (CarritoRequestDto.DetalleDto productoSolicitado : datos.detalles()) {
+            Detalle detalle = new Detalle();
+            detalle.setProductoId(productoSolicitado.productoId());
+            detalle.setCantidad(productoSolicitado.cantidad());
+            detalle.setPrecioUnitario(productoSolicitado.precioUnitario());
+            entidad.getDetalles().add(detalle);
         }
     }
-
-    private CarritoResponseDto toResponse(Carrito e) {
-        return new CarritoResponseDto(e.getId(), e.getClienteId(), e.getEstado(), e.isActivo(), e.getCreatedAt(), e.getUpdatedAt(), e.getDetalles().stream().map(d -> new CarritoRequestDto.DetalleDto(d.getProductoId(), d.getCantidad(), d.getPrecioUnitario())).toList(), e.getSubtotal(), e.getTotal());
+    private CarritoResponseDto convertirRespuesta(Carrito registro) {
+        return new CarritoResponseDto(registro.getId(), registro.getClienteId(), registro.getEstado(), registro.isActivo(), registro.getCreatedAt(), registro.getUpdatedAt(), registro.getDetalles().stream().map(detalle -> new CarritoRequestDto.DetalleDto(detalle.getProductoId(), detalle.getCantidad(), detalle.getPrecioUnitario())).toList(), registro.calcularSubtotal(), registro.calcularTotal());
     }
 }

@@ -20,8 +20,17 @@ public class Carrito {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "detalle_carrito", joinColumns = @JoinColumn(name = "carrito_id"))
     private List<Detalle> detalles = new ArrayList<>();
-    public BigDecimal getSubtotal() { return detalles.stream().map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad()))).reduce(BigDecimal.ZERO, BigDecimal::add); }
-    public BigDecimal getTotal() { return getSubtotal(); }
-    @PrePersist void crearFecha() { createdAt = Instant.now(); updatedAt = createdAt; }
-    @PreUpdate void actualizarFecha() { updatedAt = Instant.now(); }
+    public BigDecimal calcularSubtotal() {
+        return detalles.stream().map(detalle -> detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad()))).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+    public BigDecimal calcularTotal() {
+        return calcularSubtotal();
+    }
+    @PrePersist void crearFecha() {
+        createdAt = Instant.now();
+        updatedAt = createdAt;
+    }
+    @PreUpdate void actualizarFecha() {
+        updatedAt = Instant.now();
+    }
 }
