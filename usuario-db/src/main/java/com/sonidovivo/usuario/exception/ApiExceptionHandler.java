@@ -7,9 +7,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 @RestControllerAdvice
 public class ApiExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
-    ResponseEntity<ProblemDetail> dominio(ResponseStatusException e) { return ResponseEntity.status(e.getStatusCode()).body(ProblemDetail.forStatusAndDetail(e.getStatusCode(), e.getReason())); }
+    ResponseEntity<ProblemDetail> dominio(ResponseStatusException error) {
+        return ResponseEntity.status(error.getStatusCode()).body(ProblemDetail.forStatusAndDetail(error.getStatusCode(), error.getReason()));
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<ProblemDetail> validacion(MethodArgumentNotValidException e) { return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getBindingResult().getFieldErrors().stream().map(f -> f.getField() + ": " + f.getDefaultMessage()).collect(java.util.stream.Collectors.joining("; ")))); }
+    ResponseEntity<ProblemDetail> validacion(MethodArgumentNotValidException error) {
+        return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, error.getBindingResult().getFieldErrors().stream().map(campo -> campo.getField() + ": " + campo.getDefaultMessage()).collect(java.util.stream.Collectors.joining("; "))));
+    }
     @ExceptionHandler(DataIntegrityViolationException.class)
-    ResponseEntity<ProblemDetail> conflicto() { return ResponseEntity.status(409).body(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Los datos incumplen una restriccion de integridad")); }
+    ResponseEntity<ProblemDetail> conflicto() {
+        return ResponseEntity.status(409).body(ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Los datos incumplen una restriccion de integridad"));
+    }
 }
